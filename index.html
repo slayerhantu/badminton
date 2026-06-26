@@ -204,4 +204,68 @@
                     var badgeColor = isNext ? 'green' : 'blue';
                     
                     var sessionKey = session.calDate.replace('/', '_');
-                    var maxPlayers = session.maxPlayers ||
+                    var maxPlayers = session.maxPlayers || 10;
+
+                    var livePlayers = [...session.players];
+                    try {
+                        const cloudRes = await fetch(`${ENGINE_URL}?key=${sessionKey}`);
+                        if (cloudRes.ok) {
+                            const cloudData = await cloudRes.json();
+                            if (cloudData && cloudData.length > 0) livePlayers = cloudData;
+                        }
+                    } catch(e) { console.log("Engine network reading skipped"); }
+
+                    var playerHTML = '';
+                    var activeCount = 0;
+                    var baseTemplateArray = [];
+
+                    for (let i = 0; i < maxPlayers; i++) {
+                        var pName = livePlayers[i] || (session.players && session.players[i]) || "";
+                        baseTemplateArray.push(pName);
+
+                        if (pName && !pName.toLowerCase().includes('open') && !pName.toLowerCase().includes('available') && pName !== "") {
+                            playerHTML += `<div class="player-tag">👤 ${pName}</div>`;
+                            activeCount++;
+                        } else {
+                            var stringifiedTemplate = encodeURIComponent(JSON.stringify(baseTemplateArray));
+                            playerHTML += `<div class="player-tag open" onclick="window.claimSlot('${sessionKey}', ${i}, '${stringifiedTemplate}')">➕ Join Slot</div>`;
+                        }
+                    }
+
+                    var cleanTitle = `Badminton (${session.court})`;
+                    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                    var googleBase = isMobile ? 'https://calendar.google.com/calendar/gp#~calendar:view=e&action=TEMPLATE' : 'https://calendar.google.com/calendar/render?action=TEMPLATE';
+                    var googleUrl = `${googleBase}&text=${encodeURIComponent(cleanTitle)}&dates=${session.calDate}&details=${encodeURIComponent('Check badminton link for lineup updates.')}&location=${encodeURIComponent(session.location)}&ctz=Asia/Kuala_Lumpur`;
+
+                    var card = document.createElement('div');
+                    card.className = `booking-card ${isNext ? 'next-up' : ''}`;
+                    card.innerHTML = `
+                        <span class="badge ${badgeColor}">${badgeText}</span>
+                        <h2 class="date-title">${session.date}</h2>
+                        <div class="details-grid">
+                            <div class="detail-item"><div class="label">Time</div><div class="val">${session.time}</div></div>
+                            <div class="detail-item"><div class="label">Court(s)</div><div class="val">${session.court}</div></div>
+                            <div class="detail-item" style="grid-column: span 2;"><div class="label">Location</div><div class="val">${session.location}</div></div>
+                        </div>
+                        <div class="players-section">
+                            <div class="players-title">Lineup Board (${activeCount}/${maxPlayers} Players)</div>
+                            <div class="player-tags">${playerHTML}</div>
+                        </div>
+                        <a href="${googleUrl}" target="_blank" class="cal-btn">
+                            📅 Add to Google Calendar
+                        </a>
+                    `;
+                    container.appendChild(card);
+                }
+
+                if (activeCardsCount === 0) {
+                    container.innerHTML = '<div class="no-sessions">🏸 No upcoming sessions listed for this week. Stay tuned!</div>';
+                }
+            })
+            .catch(err => {
+                document.getElementById('schedule-container').innerHTML = 'Error loading schedule data.';
+                console.error(err);
+            });
+    </script>
+</body>
+</html>
