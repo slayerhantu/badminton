@@ -131,7 +131,15 @@
     <div class="footer">Tip: Bookmark this page to check weekly slots!</div>
 
     <script>
-        const ENGINE_URL = "https://script.google.com/macros/s/AKfycbyi8RwKj4aM5b1QLAQMZhBQ-5RU6RT891Pxi-2CIQtoTjolPVl0GYiquPFrvz4W19TI/exec";
+        // =================================================================
+        // ⚠️ PASTE YOUR GOOGLE FORM CONFIGURATION METRICS HERE:
+        // =================================================================
+        const FORM_ID = "YOUR_GOOGLE_FORM_ID_HERE"; // The long string of letters/numbers in your form link
+        const ENTRY_KEY = "entry.11111111";        // Replace with your first entry ID number
+        const ENTRY_PLAYERS = "entry.22222222";    // Replace with your second entry ID number
+        
+        // Paste the same Web App URL you generated in your last step here to read the results out:
+        const READ_ENGINE_URL = "https://script.google.com/macros/s/AKfycbyi8RwKj4aM5b1QLAQMZhBQ-5RU6RT891Pxi-2CIQtoTjolPVl0GYiquPFrvz4W19TI/exec";
 
         function getMalaysiaNow() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kuala_Lumpur"}));
@@ -158,38 +166,24 @@
             return new Date(year, month, day, hour, min, sec);
         }
 
-        window.claimSlot = async function(sessionKey, slotIndex, defaultPlayersJson) {
+        window.claimSlot = function(sessionKey, slotIndex, defaultPlayersJson) {
             var name = prompt("Enter your name to claim this slot:");
             if (!name || name.trim() === "") return;
 
             var currentPlayers = JSON.parse(decodeURIComponent(defaultPlayersJson));
-            
-            // Check if there are existing live entries on the cloud server before rewriting
-            try {
-                const checkRes = await fetch(`${ENGINE_URL}?key=${sessionKey}`);
-                if (checkRes.ok) {
-                    const latestArr = await checkRes.json();
-                    if (latestArr && latestArr.length > 0) currentPlayers = latestArr;
-                }
-            } catch(e) {}
-
             currentPlayers[slotIndex] = name.trim();
 
-            // Pack array into an absolute native form structure to guarantee cross-network data saving
-            const formPayload = new URLSearchParams();
-            formPayload.append("sessionKey", sessionKey);
-            formPayload.append("players", JSON.stringify(currentPlayers));
+            // Construct an official Google Form post submission link
+            const submissionUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse?submit=Submit&${ENTRY_KEY}=${encodeURIComponent(sessionKey)}&${ENTRY_PLAYERS}=${encodeURIComponent(JSON.stringify(currentPlayers))}`;
 
-            try {
-                await fetch(ENGINE_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    body: formPayload
-                });
-            } catch(e) {}
+            // Create a hidden image beacon to drop the request directly into Google Forms silently
+            const beacon = new Image();
+            beacon.src = submissionUrl;
 
-            // Give the engine exactly 1.2 seconds to breathe before reloading the fresh screen text
-            setTimeout(() => { window.location.reload(); }, 1200);
+            // Save locally immediately so it shows up for the user without waiting for GitHub cache
+            localStorage.setItem(`live_${sessionKey}`, JSON.stringify(currentPlayers));
+
+            setTimeout(() => { window.location.reload(); }, 600);
         };
 
         fetch('schedule.json?t=' + new Date().getTime())
@@ -215,14 +209,16 @@
                     var sessionKey = session.calDate.replace('/', '_');
                     var maxPlayers = session.maxPlayers || 10;
 
-                    var livePlayers = [...session.players];
+                    // Read local cache layout first, fallback to script tracking database channel
+                    var livePlayers = JSON.parse(localStorage.getItem(`live_${sessionKey}`)) || [...session.players];
+                    
                     try {
-                        const cloudRes = await fetch(`${ENGINE_URL}?key=${sessionKey}`);
+                        const cloudRes = await fetch(`${READ_ENGINE_URL}?key=${sessionKey}`);
                         if (cloudRes.ok) {
                             const cloudData = await cloudRes.json();
                             if (cloudData && cloudData.length > 0) livePlayers = cloudData;
                         }
-                    } catch(e) { console.log("Locker synchronization fallback executed"); }
+                    } catch(e) {}
 
                     var playerHTML = '';
                     var activeCount = 0;
