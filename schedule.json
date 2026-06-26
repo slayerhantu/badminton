@@ -7,7 +7,7 @@
     "court": "Court 1",
     "location": "D'ivo Old Klang Road",
     "maxPlayers": 10,
-    "players": []
+    "players": ["Hazel", "Bob", "Poh Yeng", "Andy"]
   },
   {
     "status": "Later Slot",
