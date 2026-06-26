@@ -131,11 +131,8 @@
     <div class="footer">Tip: Bookmark this page to check weekly slots!</div>
 
     <script>
-        // ========================================================
-        // ⚠️ PASTE YOUR GOOGLE DEPLOYMENT WEB APP URL RIGHT HERE:
-        // ========================================================
+        // Integrated your customized active Google cloud engine channel link directly
         const ENGINE_URL = "https://script.google.com/macros/s/AKfycbyi8RwKj4aM5b1QLAQMZhBQ-5RU6RT891Pxi-2CIQtoTjolPVl0GYiquPFrvz4W19TI/exec";
-
 
         function getMalaysiaNow() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kuala_Lumpur"}));
@@ -154,4 +151,126 @@
 
         function parseCalDateString(dateStr) {
             const year = parseInt(dateStr.substring(0, 4));
-            const month = parseInt
+            const month = parseInt(dateStr.substring(4, 6)) - 1; 
+            var day = parseInt(dateStr.substring(6, 8));
+            var hour = parseInt(dateStr.substring(9, 11));
+            var min = parseInt(dateStr.substring(11, 13));
+            var sec = parseInt(dateStr.substring(13, 15));
+            return new Date(year, month, day, hour, min, sec);
+        }
+
+        window.claimSlot = async function(sessionKey, slotIndex, defaultPlayersJson) {
+            var name = prompt("Enter your name to claim this slot:");
+            if (!name || name.trim() === "") return;
+
+            var currentPlayers = JSON.parse(decodeURIComponent(defaultPlayersJson));
+
+            try {
+                const getRes = await fetch(`${ENGINE_URL}?key=${sessionKey}`);
+                if (getRes.ok) {
+                    const latestArr = await getRes.json();
+                    if (latestArr && latestArr.length > 0) currentPlayers = latestArr;
+                }
+
+                currentPlayers[slotIndex] = name.trim();
+
+                await fetch(ENGINE_URL, {
+                    method: "POST",
+                    mode: "no-cors", 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionKey: sessionKey, players: currentPlayers })
+                });
+
+                setTimeout(() => { window.location.reload(); }, 600);
+            } catch (err) {
+                alert("Submission timed out. Please try again.");
+                console.error(err);
+            }
+        };
+
+        fetch('schedule.json?t=' + new Date().getTime())
+            .then(response => response.json())
+            .then(async (data) => {
+                const container = document.getElementById('schedule-container');
+                container.innerHTML = ''; 
+
+                const mytNow = getMalaysiaNow();
+                var activeCardsCount = 0;
+
+                for (const session of data) {
+                    var times = session.calDate.split('/');
+                    var sessionEndTime = parseCalDateString(times[1]);
+
+                    if (mytNow > sessionEndTime) continue; 
+
+                    activeCardsCount++;
+                    var isNext = activeCardsCount === 1; 
+                    var badgeText = isNext ? 'Next Up' : session.status;
+                    var badgeColor = isNext ? 'green' : 'blue';
+                    
+                    var sessionKey = session.calDate.replace('/', '_');
+                    var maxPlayers = session.maxPlayers || 10;
+
+                    var livePlayers = [...session.players];
+                    try {
+                        const cloudRes = await fetch(`${ENGINE_URL}?key=${sessionKey}`);
+                        if (cloudRes.ok) {
+                            const cloudData = await cloudRes.json();
+                            if (cloudData && cloudData.length > 0) livePlayers = cloudData;
+                        }
+                    } catch(e) { console.log("Engine connection fallback routing triggered"); }
+
+                    var playerHTML = '';
+                    var activeCount = 0;
+                    var baseTemplateArray = [];
+
+                    for (let i = 0; i < maxPlayers; i++) {
+                        var pName = livePlayers[i] || (session.players && session.players[i]) || "";
+                        baseTemplateArray.push(pName);
+
+                        if (pName && !pName.toLowerCase().includes('open') && !pName.toLowerCase().includes('available') && pName !== "") {
+                            playerHTML += `<div class="player-tag">👤 ${pName}</div>`;
+                            activeCount++;
+                        } else {
+                            var stringifiedTemplate = encodeURIComponent(JSON.stringify(baseTemplateArray));
+                            playerHTML += `<div class="player-tag open" onclick="window.claimSlot('${sessionKey}', ${i}, '${stringifiedTemplate}')">➕ Join Slot</div>`;
+                        }
+                    }
+
+                    var cleanTitle = `Badminton (${session.court})`;
+                    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                    var googleBase = isMobile ? 'https://calendar.google.com/calendar/gp#~calendar:view=e&action=TEMPLATE' : 'https://calendar.google.com/calendar/render?action=TEMPLATE';
+                    var googleUrl = `${googleBase}&text=${encodeURIComponent(cleanTitle)}&dates=${session.calDate}&details=${encodeURIComponent('Check badminton link for lineup updates.')}&location=${encodeURIComponent(session.location)}&ctz=Asia/Kuala_Lumpur`;
+
+                    var card = document.createElement('div');
+                    card.className = `booking-card ${isNext ? 'next-up' : ''}`;
+                    card.innerHTML = `
+                        <span class="badge ${badgeColor}">${badgeText}</span>
+                        <h2 class="date-title">${session.date}</h2>
+                        <div class="details-grid">
+                            <div class="detail-item"><div class="label">Time</div><div class="val">${session.time}</div></div>
+                            <div class="detail-item"><div class="label">Court(s)</div><div class="val">${session.court}</div></div>
+                            <div class="detail-item" style="grid-column: span 2;"><div class="label">Location</div><div class="val">${session.location}</div></div>
+                        </div>
+                        <div class="players-section">
+                            <div class="players-title">Lineup Board (${activeCount}/${maxPlayers} Players)</div>
+                            <div class="player-tags">${playerHTML}</div>
+                        </div>
+                        <a href="${googleUrl}" target="_blank" class="cal-btn">
+                            📅 Add to Google Calendar
+                        </a>
+                    `;
+                    container.appendChild(card);
+                }
+
+                if (activeCardsCount === 0) {
+                    container.innerHTML = '<div class="no-sessions">🏸 No upcoming sessions listed for this week. Stay tuned!</div>';
+                }
+            })
+            .catch(err => {
+                document.getElementById('schedule-container').innerHTML = 'Error loading schedule data.';
+                console.error(err);
+            });
+    </script>
+</body>
+</html>
