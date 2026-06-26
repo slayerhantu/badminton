@@ -62,7 +62,6 @@
         .label { font-size: 0.75rem; color: var(--text-sub); text-transform: uppercase; margin-bottom: 2px; }
         .val { font-weight: 600; }
         
-        /* Interactive Spreadsheet Container */
         .sheet-section {
             border-top: 1px dashed #e2e8f0;
             padding-top: 14px;
@@ -74,9 +73,11 @@
             color: var(--text-sub);
             margin-bottom: 8px;
         }
+        
+        /* 📏 ADJUSTED HEIGHT TO SHOW ROWS 1-8 COMFORTABLY */
         .sheet-frame {
             width: 100%;
-            height: 220px;
+            height: 340px; 
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             background: #f8fafc;
@@ -177,8 +178,8 @@
                     const googleBase = isMobile ? 'https://calendar.google.com/calendar/gp#~calendar:view=e&action=TEMPLATE' : 'https://calendar.google.com/calendar/render?action=TEMPLATE';
                     const googleUrl = `${googleBase}&text=${encodeURIComponent(cleanTitle)}&dates=${session.calDate}&details=${encodeURIComponent('Check website for live slot lineup.')}&location=${encodeURIComponent(session.location)}&ctz=Asia/Kuala_Lumpur`;
 
-                    // Generate the clean interactive embed frame link using the sheet ID from your json
-                    const sheetEmbedUrl = `https://docs.google.com/spreadsheets/d/${session.sheetId}/edit?rm=minimal`;
+                    const targetGid = session.gid || '0';
+                    const sheetEmbedUrl = `https://docs.google.com/spreadsheets/d/${session.sheetId}/edit?gid=${targetGid}&rm=minimal`;
 
                     const card = document.createElement('div');
                     card.className = `booking-card ${isNext ? 'next-up' : ''}`;
