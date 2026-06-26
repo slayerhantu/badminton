@@ -6,8 +6,7 @@
     "calDate": "20260701T200000/20260701T220000",
     "court": "Court 1",
     "location": "D'ivo Old Klang Road",
-    "maxPlayers": 8,
-    "cloudBinId": "NONE",
+    "maxPlayers": 12,
     "players": ["Hazel", "Bob", "Poh Yeng", "Andy"]
   },
   {
@@ -17,8 +16,7 @@
     "calDate": "20260703T180000/20260703T220000",
     "court": "Court 2",
     "location": "D'ivo Old Klang Road",
-    "maxPlayers": 8,
-    "cloudBinId": "NONE",
+    "maxPlayers": 12,
     "players": []
   }
 ]
