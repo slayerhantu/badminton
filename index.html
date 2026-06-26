@@ -68,7 +68,11 @@
         .player-tag { background: #f1f5f9; padding: 4px 10px; border-radius: 100px; font-size: 0.85rem; font-weight: 500; }
         .player-tag.open { background: none; border: 1px dashed #cbd5e1; color: var(--text-sub); }
         
-        /* New Calendar Button Style */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
         .cal-btn {
             display: flex;
             align-items: center;
@@ -80,16 +84,26 @@
             border: 1px solid #cbd5e1;
             padding: 10px;
             border-radius: 10px;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 600;
             text-decoration: none;
             transition: all 0.2s ease;
             box-sizing: border-box;
+            cursor: pointer;
         }
         .cal-btn:hover {
             background: #f1f5f9;
             color: #1e293b;
             border-color: #94a3b8;
+        }
+        .cal-btn.apple-android {
+            background: #faf5ff;
+            color: #6b21a8;
+            border-color: #d8b4fe;
+        }
+        .cal-btn.apple-android:hover {
+            background: #f3e8ff;
+            border-color: #c084fc;
         }
 
         .footer { font-size: 0.8rem; color: var(--text-sub); margin-top: 12px; }
@@ -120,13 +134,41 @@
         updateMalaysiaClock();
         setInterval(updateMalaysiaClock, 1000);
 
+        function downloadICS(title, location, calDate, lineup) {
+            const times = calDate.split('/');
+            const startTime = times[0];
+            const endTime = times[1];
+
+            const icsContent = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//Badminton Schedule//EN',
+                'BEGIN:VEVENT',
+                `SUMMARY:${title}`,
+                `LOCATION:${location}`,
+                `DESCRIPTION:Lineup: ${lineup}`,
+                `DTSTART;TZID=Asia/Kuala_Lumpur:${startTime}`,
+                `DTEND;TZID=Asia/Kuala_Lumpur:${endTime}`,
+                'END:VEVENT',
+                'END:VCALENDAR'
+            ].join('\r\n');
+
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', 'badminton-session.ics');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         fetch('schedule.json?t=' + new Date().getTime())
             .then(response => response.json())
             .then(data => {
                 const container = document.getElementById('schedule-container');
                 container.innerHTML = ''; 
 
-                data.forEach(session => {
+                data.forEach((session, index) => {
                     const isNext = session.status.toLowerCase() === 'next up';
                     const badgeColor = isNext ? 'green' : 'blue';
                     
@@ -136,11 +178,16 @@
                         playerHTML += `<div class="player-tag ${isOpen ? 'open' : ''}">${player}</div>`;
                     });
 
-                    // Auto-generates the Google Calendar link parameters dynamically
-                    const calTitle = encodeURIComponent(`Badminton (${session.court})`);
-                    const calDetails = encodeURIComponent(`Lineup: ${session.players.join(', ')}`);
+                    const cleanTitle = `Badminton (${session.court})`;
+                    const cleanLineup = session.players.join(', ');
+                    const calTitle = encodeURIComponent(cleanTitle);
+                    const calDetails = encodeURIComponent(`Lineup: ${cleanLineup}`);
                     const calLoc = encodeURIComponent(session.location);
-                    const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${calTitle}&dates=${session.calDate}&details=${calDetails}&location=${calLoc}&ctz=Asia/Kuala_Lumpur`;
+                    
+                    // Smart detection link: forces mobile calendar app render layout smoothly on phones
+                    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                    const googleBase = isMobile ? 'https://calendar.google.com/calendar/gp#~calendar:view=e&action=TEMPLATE' : 'https://calendar.google.com/calendar/render?action=TEMPLATE';
+                    const googleUrl = `${googleBase}&text=${calTitle}&dates=${session.calDate}&details=${calDetails}&location=${calLoc}&ctz=Asia/Kuala_Lumpur`;
 
                     const card = document.createElement('div');
                     card.className = `booking-card ${isNext ? 'next-up' : ''}`;
@@ -156,11 +203,20 @@
                             <div class="players-title">Lineup (${session.players.filter(p => !p.toLowerCase().includes('open')).length} Players)</div>
                             <div class="player-tags">${playerHTML}</div>
                         </div>
-                        <a href="${calUrl}" target="_blank" class="cal-btn">
-                            📅 Add to Google Calendar
-                        </a>
+                        <div class="btn-group">
+                            <a href="${googleUrl}" target="_blank" class="cal-btn">
+                                🤖 Add to Google Calendar
+                            </a>
+                            <button id="ics-btn-${index}" class="cal-btn apple-android">
+                                🍏 Add to iPhone / System Calendar
+                            </button>
+                        </div>
                     `;
                     container.appendChild(card);
+
+                    document.getElementById(`ics-btn-${index}`).addEventListener('click', () => {
+                        downloadICS(cleanTitle, session.location, session.calDate, cleanLineup);
+                    });
                 });
             })
             .catch(err => {
