@@ -9,7 +9,6 @@
             --bg-color: #f1f5f9;
             --card-bg: #ffffff;
             --primary: #10b981;
-            --secondary: #3b82f6;
             --text-main: #0f172a;
             --text-sub: #64748b;
         }
@@ -56,7 +55,7 @@
             font-weight: 700; text-transform: uppercase; padding: 4px 8px; border-radius: 6px;
         }
         .badge.green { background: #e6f4ea; color: var(--primary); }
-        .badge.blue { background: #eff6ff; color: var(--secondary); }
+        .badge.blue { background: #eff6ff; color: #3b82f6; }
         .date-title { font-size: 1.2rem; font-weight: 700; margin: 0 0 16px 0; max-width: 70%; }
         .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
         .detail-item { background: #f8fafc; padding: 10px 12px; border-radius: 8px; font-size: 0.9rem; }
@@ -68,42 +67,24 @@
         .player-tag { background: #f1f5f9; padding: 4px 10px; border-radius: 100px; font-size: 0.85rem; font-weight: 500; }
         .player-tag.open { background: none; border: 1px dashed #cbd5e1; color: var(--text-sub); }
         
-        .btn-group {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 8px;
-        }
         .cal-btn {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
             width: 100%;
-            background: #f8fafc;
-            color: #475569;
-            border: 1px solid #cbd5e1;
-            padding: 10px;
+            background: #10b981;
+            color: white;
+            padding: 12px;
             border-radius: 10px;
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             font-weight: 600;
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: background 0.2s ease;
             box-sizing: border-box;
-            cursor: pointer;
         }
         .cal-btn:hover {
-            background: #f1f5f9;
-            color: #1e293b;
-            border-color: #94a3b8;
-        }
-        .cal-btn.apple-android {
-            background: #faf5ff;
-            color: #6b21a8;
-            border-color: #d8b4fe;
-        }
-        .cal-btn.apple-android:hover {
-            background: #f3e8ff;
-            border-color: #c084fc;
+            background: #059669;
         }
 
         .no-sessions {
@@ -158,20 +139,6 @@
             return new Date(year, month, day, hour, min, sec);
         }
 
-        // Triggers calendar injection seamlessly on click to keep the app from crashing on load
-        function triggerNativeCalendar(title, location, calDate, lineup) {
-            const times = calDate.split('/');
-            const icsContent = [
-                'BEGIN:VCALENDAR', 'VERSION:2.0', 'BEGIN:VEVENT',
-                `SUMMARY:${title}`, `LOCATION:${location}`, `DESCRIPTION:Lineup: ${lineup}`,
-                `DTSTART;TZID=Asia/Kuala_Lumpur:${times[0]}`, `DTEND;TZID=Asia/Kuala_Lumpur:${times[1]}`,
-                'END:VEVENT', 'END:VCALENDAR'
-            ].join('\r\n');
-            
-            // Safe system stream execution
-            window.location.href = 'data:text/calendar;charset=utf8,' + encodeURIComponent(icsContent);
-        }
-
         fetch('schedule.json?t=' + new Date().getTime())
             .then(response => response.json())
             .then(data => {
@@ -221,17 +188,11 @@
                             <div class="players-title">Lineup (${session.players.filter(p => !p.toLowerCase().includes('open')).length} Players)</div>
                             <div class="player-tags">${playerHTML}</div>
                         </div>
-                        <div class="btn-group">
-                            <a href="${googleUrl}" target="_blank" class="cal-btn">🤖 Add to Google Calendar</a>
-                            <button id="native-cal-btn-${index}" class="cal-btn apple-android">` + (isMobile ? '🍏 Add to Phone Calendar' : '📅 Add to System Calendar') + `</button>
-                        </div>
+                        <a href="${googleUrl}" target="_blank" class="cal-btn">
+                            📅 Add Session to Calendar
+                        </a>
                     `;
                     container.appendChild(card);
-
-                    // Listens for clicks safely, preventing browser background processing crashes
-                    document.getElementById(`native-cal-btn-${index}`).addEventListener('click', () => {
-                        triggerNativeCalendar(cleanTitle, session.location, session.calDate, cleanLineup);
-                    });
                 });
 
                 if (activeCardsCount === 0) {
