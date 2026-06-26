@@ -135,7 +135,6 @@
         const ENTRY_KEY = "entry.1867630328";        
         const ENTRY_PLAYERS = "entry.1063700401";    
         
-        // This web app configuration engine handles reading live from the sheet
         const READ_ENGINE_URL = "https://script.google.com/macros/s/AKfycbyi8RwKj4aM5b1QLAQMZhBQ-5RU6RT891Pxi-2CIQtoTjolPVl0GYiquPFrvz4W19TI/exec";
 
         function getMalaysiaNow() {
@@ -175,11 +174,11 @@
             const beacon = new Image();
             beacon.src = submissionUrl;
 
-            // Notice: Local storage caching removed so it relies strictly on your cloud database row!
-            // Give it 1.5 seconds to hit the Google Sheet before reloading the screen layout cleanly
+            // Short pause to let Google accept the request payload completely
             setTimeout(() => { window.location.reload(); }, 1500);
         };
 
+        // Cache-busting parameter attached to schedule logic data
         fetch('schedule.json?t=' + new Date().getTime())
             .then(response => response.json())
             .then(async (data) => {
@@ -203,12 +202,11 @@
                     var sessionKey = session.calDate.replace('/', '_');
                     var maxPlayers = session.maxPlayers || 10;
 
-                    // Fallback baseline array tracking
                     var livePlayers = [...session.players];
                     
-                    // Fetch directly from your live Google Sheet using your Apps Script
+                    // Connected directly to read script endpoint with mandatory cloud refresh tags
                     try {
-                        const cloudRes = await fetch(`${READ_ENGINE_URL}?key=${sessionKey}`);
+                        const cloudRes = await fetch(`${READ_ENGINE_URL}?key=${sessionKey}&nocache=${new Date().getTime()}`);
                         if (cloudRes.ok) {
                             const cloudData = await cloudRes.json();
                             if (cloudData && cloudData.length > 0) livePlayers = cloudData;
