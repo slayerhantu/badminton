@@ -8,14 +8,13 @@
         :root {
             --bg-color: #f1f5f9;
             --card-bg: #ffffff;
-            --primary: #10b981; /* Court Green */
-            --secondary: #3b82f6; /* Info Blue */
+            --primary: #10b981;
+            --secondary: #3b82f6;
             --text-main: #0f172a;
             --text-sub: #64748b;
         }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
@@ -25,204 +24,93 @@
             align-items: center;
             min-height: 100vh;
         }
-
-        .header {
-            text-align: center;
-            margin-bottom: 24px;
-            width: 100%;
-            max-width: 480px;
-        }
-
-        .header h1 {
-            font-size: 1.75rem;
-            margin: 0 0 4px 0;
-        }
-
-        .header p {
-            color: var(--text-sub);
-            margin: 0;
-            font-size: 0.95rem;
-        }
-
+        .header { text-align: center; margin-bottom: 24px; width: 100%; max-width: 480px; }
+        .header h1 { font-size: 1.75rem; margin: 0 0 4px 0; }
+        .header p { color: var(--text-sub); margin: 0; font-size: 0.95rem; }
+        #schedule-container { width: 100%; max-width: 480px; }
         .booking-card {
-            width: 100%;
-            max-width: 480px;
             background: var(--card-bg);
             border-radius: 16px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             padding: 20px;
             margin-bottom: 20px;
-            box-sizing: border-box;
-            border: 1px solid #e2e8f0;
             position: relative;
+            border: 1px solid #e2e8f0;
         }
-
-        /* Highlights the very next session */
-        .booking-card.next-up {
-            border-left: 5px solid var(--primary);
-        }
-
+        .booking-card.next-up { border-left: 5px solid var(--primary); }
         .badge {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            padding: 4px 8px;
-            border-radius: 6px;
+            position: absolute; top: 20px; right: 20px; font-size: 0.75rem;
+            font-weight: 700; text-transform: uppercase; padding: 4px 8px; border-radius: 6px;
         }
-
         .badge.green { background: #e6f4ea; color: var(--primary); }
         .badge.blue { background: #eff6ff; color: var(--secondary); }
-
-        .date-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin: 0 0 16px 0;
-            max-width: 75%; /* Don't overlap badge */
-        }
-
-        .details-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .detail-item {
-            background: #f8fafc;
-            padding: 10px 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-        }
-
-        .label {
-            font-size: 0.75rem;
-            color: var(--text-sub);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 2px;
-        }
-
+        .date-title { font-size: 1.2rem; font-weight: 700; margin: 0 0 16px 0; max-width: 70%; }
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .detail-item { background: #f8fafc; padding: 10px 12px; border-radius: 8px; font-size: 0.9rem; }
+        .label { font-size: 0.75rem; color: var(--text-sub); text-transform: uppercase; margin-bottom: 2px; }
         .val { font-weight: 600; }
-
-        .players-section {
-            border-top: 1px dashed #e2e8f0;
-            padding-top: 14px;
-        }
-
-        .players-title {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-sub);
-            margin-bottom: 8px;
-        }
-
-        .player-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .player-tag {
-            background: #f1f5f9;
-            padding: 4px 10px;
-            border-radius: 100px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .player-tag.open {
-            background: none;
-            border: 1px dashed #cbd5e1;
-            color: var(--text-sub);
-        }
-
-        .footer {
-            font-size: 0.8rem;
-            color: var(--text-sub);
-            margin-top: 12px;
-        }
+        .players-section { border-top: 1px dashed #e2e8f0; padding-top: 14px; }
+        .players-title { font-size: 0.85rem; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
+        .player-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+        .player-tag { background: #f1f5f9; padding: 4px 10px; border-radius: 100px; font-size: 0.85rem; font-weight: 500; }
+        .player-tag.open { background: none; border: 1px dashed #cbd5e1; color: var(--text-sub); }
+        .footer { font-size: 0.8rem; color: var(--text-sub); margin-top: 12px; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>🏸 Badminton Schedule</h1>
-        <p>Check court details and slots below</p>
+        <p>Current weekly court bookings</p>
     </div>
 
-    <div class="booking-card next-up">
-        <span class="badge green">Next Up</span>
-        <h2 class="date-title">Wednesday, July 1</h2>
-        
-        <div class="details-grid">
-            <div class="detail-item">
-                <div class="label">Time</div>
-                <div class="val">8:00 PM - 10:00 PM</div>
-            </div>
-            <div class="detail-item">
-                <div class="label">Court(s)</div>
-                <div class="val">Court 1 </div>
-            </div>
-            <div class="detail-item" style="grid-column: span 2;">
-                <div class="label">Location</div>
-                <div class="val">D'ivo OKR</div>
-            </div>
-        </div>
+    <!-- Website contents load here automatically -->
+    <div id="schedule-container">Loading schedule...</div>
 
-        <div class="players-section">
-            <div class="players-title">Confirmed Lineup (4/4)</div>
-            <div class="player-tags">
-                <div class="player-tag">Hazel</div>
-                <div class="player-tag">Bob</div>
-                <div class="player-tag">Andy</div>
-                <div class="player-tag">Poh Yeng</div>
-                <div class="player-tag">Azim</div>
-                <div class="player-tag">JJ</div>
-            </div>
-        </div>
-    </div>
+    <div class="footer">Tip: Bookmark this page to check weekly slots!</div>
 
+    <script>
+        // Fetches data from your clean schedule.json file
+        fetch('schedule.json?t=' + new Date().getTime())
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('schedule-container');
+                container.innerHTML = ''; // Clear loading text
 
-    <div class="booking-card">
-        <span class="badge blue">Later Slot</span>
-        <h2 class="date-title">Sunday, July 5</h2>
-        
-        <div class="details-grid">
-            <div class="detail-item">
-                <div class="label">Time</div>
-                <div class="val">3:00 PM - 5:00 PM</div>
-            </div>
-            <div class="detail-item">
-                <div class="label">Court(s)</div>
-                <div class="val">Court 1 & 2</div>
-            </div>
-            <div class="detail-item" style="grid-column: span 2;">
-                <div class="label">Location</div>
-                <div class="val">Downtown Center</div>
-            </div>
-        </div>
+                data.forEach(session => {
+                    const isNext = session.status.toLowerCase() === 'next up';
+                    const badgeColor = isNext ? 'green' : 'blue';
+                    
+                    // Build player tags HTML
+                    let playerHTML = '';
+                    session.players.forEach(player => {
+                        const isOpen = player.toLowerCase().includes('open');
+                        playerHTML += `<div class="player-tag ${isOpen ? 'open' : ''}">${player}</div>`;
+                    });
 
-        <div class="players-section">
-            <div class="players-title">Confirmed Lineup (6/8)</div>
-            <div class="player-tags">
-                <div class="player-tag">Alex</div>
-                <div class="player-tag">Ben</div>
-                <div class="player-tag">Emma</div>
-                <div class="player-tag">Sam</div>
-                <div class="player-tag">Jack</div>
-                <div class="player-tag">Lily</div>
-                <div class="player-tag open">+1 Open</div>
-                <div class="player-tag open">+1 Open</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="footer">
-        Tip: Bookmark this page to check weekly slots!
-    </div>
-
+                    // Build card template
+                    const card = document.createElement('div');
+                    card.className = `booking-card ${isNext ? 'next-up' : ''}`;
+                    card.innerHTML = `
+                        <span class="badge ${badgeColor}">${session.status}</span>
+                        <h2 class="date-title">${session.date}</h2>
+                        <div class="details-grid">
+                            <div class="detail-item"><div class="label">Time</div><div class="val">${session.time}</div></div>
+                            <div class="detail-item"><div class="label">Court(s)</div><div class="val">${session.court}</div></div>
+                            <div class="detail-item" style="grid-column: span 2;"><div class="label">Location</div><div class="val">${session.location}</div></div>
+                        </div>
+                        <div class="players-section">
+                            <div class="players-title">Lineup (${session.players.filter(p => !p.toLowerCase().includes('open')).length} Players)</div>
+                            <div class="player-tags">${playerHTML}</div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            })
+            .catch(err => {
+                document.getElementById('schedule-container').innerHTML = 'Error loading schedule data.';
+                console.error(err);
+            });
+    </script>
 </body>
 </html>
