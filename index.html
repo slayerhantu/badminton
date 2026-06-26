@@ -158,26 +158,38 @@
             return new Date(year, month, day, hour, min, sec);
         }
 
-        window.claimSlot = function(sessionKey, slotIndex, defaultPlayersJson) {
+        window.claimSlot = async function(sessionKey, slotIndex, defaultPlayersJson) {
             var name = prompt("Enter your name to claim this slot:");
             if (!name || name.trim() === "") return;
 
             var currentPlayers = JSON.parse(decodeURIComponent(defaultPlayersJson));
+            
+            // Check if there are existing live entries on the cloud server before rewriting
+            try {
+                const checkRes = await fetch(`${ENGINE_URL}?key=${sessionKey}`);
+                if (checkRes.ok) {
+                    const latestArr = await checkRes.json();
+                    if (latestArr && latestArr.length > 0) currentPlayers = latestArr;
+                }
+            } catch(e) {}
+
             currentPlayers[slotIndex] = name.trim();
 
-            const submissionPayload = JSON.stringify({ sessionKey: sessionKey, players: currentPlayers });
-            
+            // Pack array into an absolute native form structure to guarantee cross-network data saving
+            const formPayload = new URLSearchParams();
+            formPayload.append("sessionKey", sessionKey);
+            formPayload.append("players", JSON.stringify(currentPlayers));
+
             try {
-                fetch(ENGINE_URL, {
+                await fetch(ENGINE_URL, {
                     method: "POST",
-                    mode: "no-cors", 
-                    headers: { 'Content-Type': 'application/json' },
-                    body: submissionPayload
+                    mode: "no-cors",
+                    body: formPayload
                 });
             } catch(e) {}
 
-            // Calibrated delay (1.5 seconds) giving Google time to process the save request
-            setTimeout(() => { window.location.reload(); }, 1500);
+            // Give the engine exactly 1.2 seconds to breathe before reloading the fresh screen text
+            setTimeout(() => { window.location.reload(); }, 1200);
         };
 
         fetch('schedule.json?t=' + new Date().getTime())
@@ -210,7 +222,7 @@
                             const cloudData = await cloudRes.json();
                             if (cloudData && cloudData.length > 0) livePlayers = cloudData;
                         }
-                    } catch(e) { console.log("Engine network reading skipped"); }
+                    } catch(e) { console.log("Locker synchronization fallback executed"); }
 
                     var playerHTML = '';
                     var activeCount = 0;
