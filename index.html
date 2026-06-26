@@ -106,6 +106,16 @@
             border-color: #c084fc;
         }
 
+        .no-sessions {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-sub);
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px dashed #cbd5e1;
+            font-weight: 500;
+        }
+
         .footer { font-size: 0.8rem; color: var(--text-sub); margin-top: 12px; }
     </style>
 </head>
@@ -123,10 +133,14 @@
     <div class="footer">Tip: Bookmark this page to check weekly slots!</div>
 
     <script>
+        function getMalaysiaNow() {
+            return new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kuala_Lumpur"}));
+        }
+
         function updateMalaysiaClock() {
-            const now = new Date();
-            const dateOptions = { timeZone: 'Asia/Kuala_Lumpur', day: '2-digit', month: 'short', year: 'numeric' };
-            const timeOptions = { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            const now = getMalaysiaNow();
+            const dateOptions = { day: '2-digit', month: 'short', year: 'numeric' };
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
             const dateStr = new Intl.DateTimeFormat('en-GB', dateOptions).format(now);
             const timeStr = new Intl.DateTimeFormat('en-US', timeOptions).format(now);
             document.getElementById('malaysia-clock').innerText = `🇲🇾 MYT: ${dateStr} | ${timeStr}`;
@@ -134,26 +148,28 @@
         updateMalaysiaClock();
         setInterval(updateMalaysiaClock, 1000);
 
-        // Helper to cleanly convert data into a direct link format the phone OS can read instantly
+        function parseCalDateString(dateStr) {
+            const year = parseInt(dateStr.substring(0, 4));
+            const month = parseInt(dateStr.substring(4, 6)) - 1; 
+            const day = parseInt(dateStr.substring(6, 8));
+            const hour = parseInt(dateStr.substring(9, 11));
+            const min = parseInt(dateStr.substring(11, 13));
+            const sec = parseInt(dateStr.substring(13, 15));
+            return new Date(year, month, day, hour, min, sec);
+        }
+
+        // Generates an instant layout string utilizing webcal protocols to stop device downloads
         function generateNativeCalUrl(title, location, calDate, lineup) {
             const times = calDate.split('/');
-            const startTime = times[0];
-            const endTime = times[1];
-
             const icsLines = [
-                'BEGIN:VCALENDAR',
-                'VERSION:2.0',
-                'BEGIN:VEVENT',
-                `SUMMARY:${title}`,
-                `LOCATION:${location}`,
-                `DESCRIPTION:Lineup: ${lineup}`,
-                `DTSTART;TZID=Asia/Kuala_Lumpur:${startTime}`,
-                `DTEND;TZID=Asia/Kuala_Lumpur:${endTime}`,
-                'END:VEVENT',
-                'END:VCALENDAR'
+                'BEGIN:VCALENDAR', 'VERSION:2.0', 'BEGIN:VEVENT',
+                `SUMMARY:${title}`, `LOCATION:${location}`, `DESCRIPTION:Lineup: ${lineup}`,
+                `DTSTART;TZID=Asia/Kuala_Lumpur:${times[0]}`, `DTEND;TZID=Asia/Kuala_Lumpur:${times[1]}`,
+                'END:VEVENT', 'END:VCALENDAR'
             ].join('\n');
-
-            return 'data:text/calendar;charset=utf8,' + encodeURIComponent(icsLines);
+            
+            // Webcal dynamic generation string to auto-trigger iOS system handlers without file tracking
+            return 'webcal://data:text/calendar;charset=utf8,' + encodeURIComponent(icsLines);
         }
 
         fetch('schedule.json?t=' + new Date().getTime())
@@ -162,8 +178,20 @@
                 const container = document.getElementById('schedule-container');
                 container.innerHTML = ''; 
 
+                const mytNow = getMalaysiaNow();
+                let activeCardsCount = 0;
+
                 data.forEach((session, index) => {
-                    const isNext = session.status.toLowerCase() === 'next up';
+                    const times = session.calDate.split('/');
+                    const sessionEndTime = parseCalDateString(times[1]);
+
+                    if (mytNow > sessionEndTime) {
+                        return; 
+                    }
+
+                    activeCardsCount++;
+                    const isNext = activeCardsCount === 1; 
+                    const badgeText = isNext ? 'Next Up' : session.status;
                     const badgeColor = isNext ? 'green' : 'blue';
                     
                     let playerHTML = '';
@@ -174,21 +202,17 @@
 
                     const cleanTitle = `Badminton (${session.court})`;
                     const cleanLineup = session.players.join(', ');
-                    const calTitle = encodeURIComponent(cleanTitle);
-                    const calDetails = encodeURIComponent(`Lineup: ${cleanLineup}`);
-                    const calLoc = encodeURIComponent(session.location);
                     
                     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                     const googleBase = isMobile ? 'https://calendar.google.com/calendar/gp#~calendar:view=e&action=TEMPLATE' : 'https://calendar.google.com/calendar/render?action=TEMPLATE';
-                    const googleUrl = `${googleBase}&text=${calTitle}&dates=${session.calDate}&details=${calDetails}&location=${calLoc}&ctz=Asia/Kuala_Lumpur`;
-
-                    // Generate the clean data stream link
+                    const googleUrl = `${googleBase}&text=${encodeURIComponent(cleanTitle)}&dates=${session.calDate}&details=${encodeURIComponent(`Lineup: ${cleanLineup}`)}&location=${encodeURIComponent(session.location)}&ctz=Asia/Kuala_Lumpur`;
+                    
                     const nativeCalUrl = generateNativeCalUrl(cleanTitle, session.location, session.calDate, cleanLineup);
 
                     const card = document.createElement('div');
                     card.className = `booking-card ${isNext ? 'next-up' : ''}`;
                     card.innerHTML = `
-                        <span class="badge ${badgeColor}">${session.status}</span>
+                        <span class="badge ${badgeColor}">${badgeText}</span>
                         <h2 class="date-title">${session.date}</h2>
                         <div class="details-grid">
                             <div class="detail-item"><div class="label">Time</div><div class="val">${session.time}</div></div>
@@ -200,21 +224,12 @@
                             <div class="player-tags">${playerHTML}</div>
                         </div>
                         <div class="btn-group">
-                            <a href="${googleUrl}" target="_blank" class="cal-btn">
-                                🤖 Add to Google Calendar
-                            </a>
-                            <a href="${nativeCalUrl}" class="cal-btn apple-android">
-                                🍏 Add to iPhone / Phone Calendar
-                            </a>
+                            <a href="${googleUrl}" target="_blank" class="cal-btn">🤖 Add to Google Calendar</a>
+                            <a href="${nativeCalUrl}" class="cal-btn apple-android">` + (isMobile ? '🍏 Add to Phone Calendar' : '📅 Add to System Calendar') + `</a>
                         </div>
                     `;
                     container.appendChild(card);
                 });
-            })
-            .catch(err => {
-                document.getElementById('schedule-container').innerHTML = 'Error loading schedule data.';
-                console.error(err);
-            });
-    </script>
-</body>
-</html>
+
+                if (activeCardsCount === 0) {
+                    container.innerHTML = '<div class="no-
