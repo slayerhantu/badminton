@@ -6,7 +6,8 @@
     "calDate": "20260701T200000/20260701T220000",
     "court": "Court 1",
     "location": "D'ivo Old Klang Road",
-    "sheetId": "1t2oYtjP4NGVbmHH9IceEBOOVCtk5tj7pVKEHCCH4HWI"
+    "maxPlayers": 12,
+    "players": ["Hazel", "Bob", "Poh Yeng", "Andy"]
   },
   {
     "status": "Later Slot",
@@ -15,6 +16,7 @@
     "calDate": "20260703T180000/20260703T220000",
     "court": "Court 2",
     "location": "D'ivo Old Klang Road",
-    "sheetId": "1rSYPjNVS9D5RjmBmge9y4qSUZ6kn4VKAC69xOGmwerk"
+    "maxPlayers": 12,
+    "players": []
   }
 ]
