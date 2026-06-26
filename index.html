@@ -131,8 +131,8 @@
     <div class="footer">Tip: Bookmark this page to check weekly slots!</div>
 
     <script>
-        // Unique cloud locker name for your group's active list tracking
-        const DB_BUCKET = "badminton_okr_lineup_v1";
+        // Open-write public access endpoint string to ensure layout execution stays anonymous
+        const BUCKET_URL = "https://kvdb.io/ip3bE62wG9S7mK5vAX8z1q/badminton_okr_lineup_v2_";
 
         function getMalaysiaNow() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kuala_Lumpur"}));
@@ -159,33 +159,36 @@
             return new Date(year, month, day, hour, min, sec);
         }
 
-        // Saves a newly claimed slot to the cloud database live
-        async function claimSlot(sessionKey, slotIndex, maxSlots) {
+        window.claimSlot = async function(sessionKey, slotIndex) {
             const name = prompt("Enter your name to join this slot:");
             if (!name || name.trim() === "") return;
 
             try {
-                // Fetch current list or make a blank one
                 let currentPlayers = [];
-                const res = await fetch(`https://kvdb.io/MN9vG7XmU5S8pYvA3B9cde/${DB_BUCKET}_${sessionKey}`);
+                const res = await fetch(BUCKET_URL + sessionKey);
                 if (res.ok) {
                     currentPlayers = await res.json();
                 }
 
                 currentPlayers[slotIndex] = name.trim();
 
-                // Save list back to the cloud database
-                await fetch(`https://kvdb.io/MN9vG7XmU5S8pYvA3B9cde/${DB_BUCKET}_${sessionKey}`, {
+                // Safe execution wrapper passing string headers
+                const saveRes = await fetch(BUCKET_URL + sessionKey, {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(currentPlayers)
                 });
 
-                window.location.reload();
+                if (saveRes.ok) {
+                    window.location.reload();
+                } else {
+                    alert("Locker database rejected submission layout. Please try again.");
+                }
             } catch (err) {
-                alert("Error saving your slot. Please try again.");
+                alert("Cloud sync failure. Please verify network connections.");
                 console.error(err);
             }
-        }
+        };
 
         fetch('schedule.json?t=' + new Date().getTime())
             .then(response => response.json())
@@ -210,25 +213,23 @@
                     const sessionKey = session.calDate.replace('/', '_');
                     const maxPlayers = session.maxPlayers || 8;
 
-                    // Pull live custom player data from the cloud locker
                     let livePlayers = [];
                     try {
-                        const cloudRes = await fetch(`https://kvdb.io/MN9vG7XmU5S8pYvA3B9cde/${DB_BUCKET}_${sessionKey}`);
+                        const cloudRes = await fetch(BUCKET_URL + sessionKey);
                         if (cloudRes.ok) livePlayers = await cloudRes.json();
-                    } catch(e) { console.log("Using file fallback components"); }
+                    } catch(e) { console.log("Locker initialization reading skipped"); }
 
                     let playerHTML = '';
                     let activeCount = 0;
 
                     for (let i = 0; i < maxPlayers; i++) {
-                        // Priority: Live cloud player name -> fallback file seed name -> empty slot
                         const pName = livePlayers[i] || (session.players && session.players[i]) || "";
                         
                         if (pName && !pName.toLowerCase().includes('open') && !pName.toLowerCase().includes('available')) {
                             playerHTML += `<div class="player-tag">👤 ${pName}</div>`;
                             activeCount++;
                         } else {
-                            playerHTML += `<div class="player-tag open" onclick="claimSlot('${sessionKey}', ${i}, ${maxPlayers})">➕ Join Slot</div>`;
+                            playerHTML += `<div class="player-tag open" onclick="window.claimSlot('${sessionKey}', ${i})">➕ Join Slot</div>`;
                         }
                     }
 
