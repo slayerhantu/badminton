@@ -111,3 +111,116 @@
             border-top: 1px dashed #e2e8f0;
             padding-top: 14px;
         }
+
+        .players-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+        }
+
+        .player-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .player-tag {
+            background: #f1f5f9;
+            padding: 4px 10px;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .player-tag.open {
+            background: none;
+            border: 1px dashed #cbd5e1;
+            color: var(--text-sub);
+        }
+
+        .footer {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🏸 Badminton Schedule</h1>
+        <p>Check court details and slots below</p>
+    </div>
+
+    <div class="booking-card next-up">
+        <span class="badge green">Next Up</span>
+        <h2 class="date-title">Saturday, July 4</h2>
+        
+        <div class="details-grid">
+            <div class="detail-item">
+                <div class="label">Time</div>
+                <div class="val">8:00 PM - 10:00 PM</div>
+            </div>
+            <div class="detail-item">
+                <div class="label">Court(s)</div>
+                <div class="val">Court 4 (Premium)</div>
+            </div>
+            <div class="detail-item" style="grid-column: span 2;">
+                <div class="label">Location</div>
+                <div class="val">Community Sports Arena</div>
+            </div>
+        </div>
+
+        <div class="players-section">
+            <div class="players-title">Confirmed Lineup (4/4)</div>
+            <div class="player-tags">
+                <div class="player-tag">Alex</div>
+                <div class="player-tag">Ben</div>
+                <div class="player-tag">Chloe</div>
+                <div class="player-tag">Dave</div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="booking-card">
+        <span class="badge blue">Later Slot</span>
+        <h2 class="date-title">Sunday, July 5</h2>
+        
+        <div class="details-grid">
+            <div class="detail-item">
+                <div class="label">Time</div>
+                <div class="val">3:00 PM - 5:00 PM</div>
+            </div>
+            <div class="detail-item">
+                <div class="label">Court(s)</div>
+                <div class="val">Court 1 & 2</div>
+            </div>
+            <div class="detail-item" style="grid-column: span 2;">
+                <div class="label">Location</div>
+                <div class="val">Downtown Center</div>
+            </div>
+        </div>
+
+        <div class="players-section">
+            <div class="players-title">Confirmed Lineup (6/8)</div>
+            <div class="player-tags">
+                <div class="player-tag">Alex</div>
+                <div class="player-tag">Ben</div>
+                <div class="player-tag">Emma</div>
+                <div class="player-tag">Sam</div>
+                <div class="player-tag">Jack</div>
+                <div class="player-tag">Lily</div>
+                <div class="player-tag open">+1 Open</div>
+                <div class="player-tag open">+1 Open</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Tip: Bookmark this page to check weekly slots!
+    </div>
+
+</body>
+</html>
