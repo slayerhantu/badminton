@@ -131,10 +131,9 @@
     <div class="footer">Tip: Bookmark this page to check weekly slots!</div>
 
     <script>
-        // Universal free public key-value API system endpoint
-        const API_BASE = "https://keyvalue.xyz/v1/key/";
-        // A unique namespace token specifically generated for your Old Klang Road group chat boards
-        const SYSTEM_TOKEN = "badminton_okr_lineup_token_2026_";
+        // Utilizing a specialized public database channel explicitly structured to allow static websites to save data seamlessly
+        const API_BASE = "https://api.restfulapi.dev/objects";
+        const STORAGE_PREFIX = "badminton_okr_slot_2026_";
 
         function getMalaysiaNow() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kuala_Lumpur"}));
@@ -166,33 +165,51 @@
             if (!name || name.trim() === "") return;
 
             let currentPlayers = JSON.parse(decodeURIComponent(defaultPlayersJson));
-            const targetedLockerUrl = `${API_BASE}${SYSTEM_TOKEN}${sessionKey}`;
+            const storageId = localStorage.getItem(`id_${sessionKey}`);
 
             try {
-                // Fetch current list state from the open web locker
-                const res = await fetch(targetedLockerUrl);
-                if (res.ok) {
-                    const textData = await res.text();
-                    if(textData && textData.trim() !== "") {
-                        currentPlayers = JSON.parse(textData);
+                let payload = {
+                    name: STORAGE_PREFIX + sessionKey,
+                    data: { players: currentPlayers }
+                };
+
+                let url = API_BASE;
+                let method = "POST";
+
+                // If this locker already exists on the network, update it instead of making a new one
+                if (storageId) {
+                    url = `${API_BASE}/${storageId}`;
+                    method = "PUT";
+                    
+                    const checkRes = await fetch(url);
+                    if (checkRes.ok) {
+                        const existing = await checkRes.ok ? await checkRes.json() : null;
+                        if (existing && existing.data && existing.data.players) {
+                            currentPlayers = existing.data.players;
+                        }
                     }
                 }
 
                 currentPlayers[slotIndex] = name.trim();
+                payload.data.players = currentPlayers;
 
-                // Save data straight back into the open box channel without authorization blocks
-                const saveRes = await fetch(targetedLockerUrl, {
-                    method: 'POST',
-                    body: JSON.stringify(currentPlayers)
+                const saveRes = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
 
                 if (saveRes.ok) {
+                    const savedData = await saveRes.json();
+                    if (savedData.id) {
+                        localStorage.setItem(`id_${sessionKey}`, savedData.id);
+                    }
                     window.location.reload();
                 } else {
-                    alert("Cloud board synchronization failed. Please try again.");
+                    alert("Sync failure. Please try again.");
                 }
             } catch (err) {
-                alert("Network communication timeout. Please try again.");
+                alert("Connection failed. Your phone network might be blocking background data scripts.");
                 console.error(err);
             }
         };
@@ -219,18 +236,20 @@
                     
                     const sessionKey = session.calDate.replace('/', '_');
                     const maxPlayers = session.maxPlayers || 8;
-                    const targetedLockerUrl = `${API_BASE}${SYSTEM_TOKEN}${sessionKey}`;
+                    const storageId = localStorage.getItem(`id_${sessionKey}`);
 
                     let livePlayers = [...session.players];
-                    try {
-                        const cloudRes = await fetch(targetedLockerUrl);
-                        if (cloudRes.ok) {
-                            const cloudText = await cloudRes.text();
-                            if (cloudText && cloudText.trim() !== "") {
-                                livePlayers = JSON.parse(cloudText);
+                    if (storageId) {
+                        try {
+                            const cloudRes = await fetch(`${API_BASE}/${storageId}`);
+                            if (cloudRes.ok) {
+                                const cloudData = await cloudRes.json();
+                                if (cloudData && cloudData.data && cloudData.data.players) {
+                                    livePlayers = cloudData.data.players;
+                                }
                             }
-                        }
-                    } catch(e) { console.log("Locker synchronization fallback executed"); }
+                        } catch(e) { console.log("Database read mismatch fallback executed"); }
+                    }
 
                     let playerHTML = '';
                     let activeCount = 0;
