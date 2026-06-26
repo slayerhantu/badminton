@@ -1,18 +1,18 @@
 [
   {
     "status": "Next Up",
-    "date": "Saturday, July 4",
+    "date": "Wednesday, July 1",
     "time": "8:00 PM - 10:00 PM",
-    "court": "Court 4",
-    "location": "Community Sports Arena",
-    "players": ["Alex", "Ben", "Chloe", "Andy"]
+    "court": "Court 1",
+    "location": "D'ivo OKR",
+    "players": ["Hazel", "Bob", "Poh Yeng", "Andy", "Azim", "JJ"]
   },
   {
     "status": "Later Slot",
-    "date": "Sunday, July 5",
-    "time": "3:00 PM - 5:00 PM",
-    "court": "Court 1 & 2",
-    "location": "Downtown Center",
-    "players": ["Alex", "Ben", "Emma", "Sam", "+1 Open Slot"]
+    "date": "Friday, July 3",
+    "time": "6:00 PM - 10:00 PM",
+    "court": "Court 2",
+    "location": "D'ivo OKR",
+    "players": ["Hazel", "Riyren", "Poh Yeng", "Andy", "Azim"]
   }
 ]
