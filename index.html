@@ -131,10 +131,10 @@
     <div class="footer">Tip: Bookmark this page to check weekly slots!</div>
 
     <script>
-        // Completely open public data storage server endpoint
-        const API_BASE = "https://api.jsonbin.io/v3/b/";
-        // Public reading and editing master access key
-        const MASTER_KEY = "$2a$10$P8gXfWkU8vS4D1bB9zE2O.HnRlJw8S3v9XhUuL7yZa1b2c3d4e5f6"; 
+        // Universal free public key-value API system endpoint
+        const API_BASE = "https://keyvalue.xyz/v1/key/";
+        // A unique namespace token specifically generated for your Old Klang Road group chat boards
+        const SYSTEM_TOKEN = "badminton_okr_lineup_token_2026_";
 
         function getMalaysiaNow() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kuala_Lumpur"}));
@@ -161,72 +161,35 @@
             return new Date(year, month, day, hour, min, sec);
         }
 
-        // Creates a clean session container on the cloud automatically if it doesn't exist
-        async function createNewBin(initialPlayers) {
-            const res = await fetch(API_BASE, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': MASTER_KEY,
-                    'X-Bin-Private': 'false'
-                },
-                body: JSON.stringify(initialPlayers)
-            });
-            if (res.ok) {
-                const data = await res.json();
-                return data.metadata.id;
-            }
-            return null;
-        }
-
-        window.claimSlot = async function(sessionKey, slotIndex, currentBinId, defaultPlayersJson) {
+        window.claimSlot = async function(sessionKey, slotIndex, defaultPlayersJson) {
             const name = prompt("Enter your name to join this slot:");
             if (!name || name.trim() === "") return;
 
-            let binId = currentBinId;
             let currentPlayers = JSON.parse(decodeURIComponent(defaultPlayersJson));
+            const targetedLockerUrl = `${API_BASE}${SYSTEM_TOKEN}${sessionKey}`;
 
             try {
-                // If this week's session doesn't have a database live yet, build one right now
-                if (!binId || binId === "" || binId === "NONE") {
-                    binId = await createNewBin(currentPlayers);
-                    if (!binId) {
-                        alert("Could not initialize open database connection.");
-                        return;
-                    }
-                    alert("Syncing new slot board. Please tap Join once more to save!");
-                    // Update user's browser memory so they don't break links
-                    localStorage.setItem(`bin_${sessionKey}`, binId);
-                    window.location.reload();
-                    return;
-                }
-
-                // Pull the current live data list
-                const res = await fetch(`${API_BASE}${binId}/latest`, {
-                    headers: { 'X-Master-Key': MASTER_KEY }
-                });
-                
+                // Fetch current list state from the open web locker
+                const res = await fetch(targetedLockerUrl);
                 if (res.ok) {
-                    const data = await res.json();
-                    currentPlayers = data.record;
+                    const textData = await res.text();
+                    if(textData && textData.trim() !== "") {
+                        currentPlayers = JSON.parse(textData);
+                    }
                 }
 
                 currentPlayers[slotIndex] = name.trim();
 
-                // Write the updated array back onto the global storage channel cleanly
-                const saveRes = await fetch(`${API_BASE}${binId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': MASTER_KEY
-                    },
+                // Save data straight back into the open box channel without authorization blocks
+                const saveRes = await fetch(targetedLockerUrl, {
+                    method: 'POST',
                     body: JSON.stringify(currentPlayers)
                 });
 
                 if (saveRes.ok) {
                     window.location.reload();
                 } else {
-                    alert("Cloud board rejected layout synchronization.");
+                    alert("Cloud board synchronization failed. Please try again.");
                 }
             } catch (err) {
                 alert("Network communication timeout. Please try again.");
@@ -256,27 +219,21 @@
                     
                     const sessionKey = session.calDate.replace('/', '_');
                     const maxPlayers = session.maxPlayers || 8;
-
-                    // Check if browser has local locker link memory overrides
-                    let activeBinId = localStorage.getItem(`bin_${sessionKey}`) || session.cloudBinId || "NONE";
+                    const targetedLockerUrl = `${API_BASE}${SYSTEM_TOKEN}${sessionKey}`;
 
                     let livePlayers = [...session.players];
-                    if (activeBinId !== "NONE") {
-                        try {
-                            const cloudRes = await fetch(`${API_BASE}${activeBinId}/latest`, {
-                                headers: { 'X-Master-Key': MASTER_KEY }
-                            });
-                            if (cloudRes.ok) {
-                                const cloudData = await cloudRes.json();
-                                livePlayers = cloudData.record;
+                    try {
+                        const cloudRes = await fetch(targetedLockerUrl);
+                        if (cloudRes.ok) {
+                            const cloudText = await cloudRes.text();
+                            if (cloudText && cloudText.trim() !== "") {
+                                livePlayers = JSON.parse(cloudText);
                             }
-                        } catch(e) { console.log("Locker synchronization fallback executed"); }
-                    }
+                        }
+                    } catch(e) { console.log("Locker synchronization fallback executed"); }
 
                     let playerHTML = '';
                     let activeCount = 0;
-                    
-                    // Create basic matching fallback template array structure
                     let baseTemplateArray = [];
 
                     for (let i = 0; i < maxPlayers; i++) {
@@ -288,7 +245,7 @@
                             activeCount++;
                         } else {
                             const stringifiedTemplate = encodeURIComponent(JSON.stringify(baseTemplateArray));
-                            playerHTML += `<div class="player-tag open" onclick="window.claimSlot('${sessionKey}', ${i}, '${activeBinId}', '${stringifiedTemplate}')">➕ Join Slot</div>`;
+                            playerHTML += `<div class="player-tag open" onclick="window.claimSlot('${sessionKey}', ${i}, '${stringifiedTemplate}')">➕ Join Slot</div>`;
                         }
                     }
 
