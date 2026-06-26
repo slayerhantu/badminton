@@ -28,7 +28,7 @@
         .header h1 { font-size: 1.75rem; margin: 0 0 4px 0; }
         .header p { color: var(--text-sub); margin: 0; font-size: 0.95rem; }
         
-        /* New Live Clock Style */
+        /* Live Clock Style */
         .live-clock {
             background: #e2e8f0;
             color: #334155;
@@ -75,36 +75,31 @@
 
     <div class="header">
         <h1>🏸 Badminton Schedule</h1>
-        <p>Current court bookings</p>
+        <p>Current weekly court bookings</p>
     </div>
 
-    <div class="live-clock" id="malaysia-clock">MYT: Loading time...</div>
+    <div class="live-clock" id="malaysia-clock">🇲🇾 MYT: Loading time...</div>
 
     <div id="schedule-container">Loading schedule...</div>
 
     <div class="footer">Tip: Bookmark this page to check weekly slots!</div>
 
     <script>
-        // --- 1. MALAYSIA RUNNING CLOCK SCRIPT ---
+        // --- 1. MALAYSIA RUNNING CLOCK SCRIPT (Day Month Year Format) ---
         function updateMalaysiaClock() {
-            const options = {
-                timeZone: 'Asia/Kuala_Lumpur',
-                weekday: 'short',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: true
-            };
+            const now = new Date();
             
-            // Force timezone format to Malaysia
-            const formatter = new Intl.DateTimeFormat('en-US', options);
-            document.getElementById('malaysia-clock').innerText = '🇲🇾 MYT: ' + formatter.format(new Date());
+            // Format options to match localized Day Month Year
+            const dateOptions = { timeZone: 'Asia/Kuala_Lumpur', day: '2-digit', month: 'short', year: 'numeric' };
+            const timeOptions = { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+            
+            // Generate clean parts
+            const dateStr = new Intl.DateTimeFormat('en-GB', dateOptions).format(now); // en-GB forces Day Month Year order
+            const timeStr = new Intl.DateTimeFormat('en-US', timeOptions).format(now);
+            
+            document.getElementById('malaysia-clock').innerText = `🇲🇾 MYT: ${dateStr} | ${timeStr}`;
         }
         
-        // Run clock instantly, then tick every second
         updateMalaysiaClock();
         setInterval(updateMalaysiaClock, 1000);
 
