@@ -24,9 +24,23 @@
             align-items: center;
             min-height: 100vh;
         }
-        .header { text-align: center; margin-bottom: 24px; width: 100%; max-width: 480px; }
+        .header { text-align: center; margin-bottom: 12px; width: 100%; max-width: 480px; }
         .header h1 { font-size: 1.75rem; margin: 0 0 4px 0; }
         .header p { color: var(--text-sub); margin: 0; font-size: 0.95rem; }
+        
+        /* New Live Clock Style */
+        .live-clock {
+            background: #e2e8f0;
+            color: #334155;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 100px;
+            margin-bottom: 24px;
+            letter-spacing: 0.02em;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+
         #schedule-container { width: 100%; max-width: 480px; }
         .booking-card {
             background: var(--card-bg);
@@ -64,31 +78,54 @@
         <p>Current weekly court bookings</p>
     </div>
 
-    <!-- Website contents load here automatically -->
+    <div class="live-clock" id="malaysia-clock">MYT: Loading time...</div>
+
     <div id="schedule-container">Loading schedule...</div>
 
     <div class="footer">Tip: Bookmark this page to check weekly slots!</div>
 
     <script>
-        // Fetches data from your clean schedule.json file
+        // --- 1. MALAYSIA RUNNING CLOCK SCRIPT ---
+        function updateMalaysiaClock() {
+            const options = {
+                timeZone: 'Asia/Kuala_Lumpur',
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            };
+            
+            // Force timezone format to Malaysia
+            const formatter = new Intl.DateTimeFormat('en-US', options);
+            document.getElementById('malaysia-clock').innerText = '🇲🇾 MYT: ' + formatter.format(new Date());
+        }
+        
+        // Run clock instantly, then tick every second
+        updateMalaysiaClock();
+        setInterval(updateMalaysiaClock, 1000);
+
+
+        // --- 2. JSON DATA LOADER ---
         fetch('schedule.json?t=' + new Date().getTime())
             .then(response => response.json())
             .then(data => {
                 const container = document.getElementById('schedule-container');
-                container.innerHTML = ''; // Clear loading text
+                container.innerHTML = ''; 
 
                 data.forEach(session => {
                     const isNext = session.status.toLowerCase() === 'next up';
                     const badgeColor = isNext ? 'green' : 'blue';
                     
-                    // Build player tags HTML
                     let playerHTML = '';
                     session.players.forEach(player => {
                         const isOpen = player.toLowerCase().includes('open');
                         playerHTML += `<div class="player-tag ${isOpen ? 'open' : ''}">${player}</div>`;
                     });
 
-                    // Build card template
                     const card = document.createElement('div');
                     card.className = `booking-card ${isNext ? 'next-up' : ''}`;
                     card.innerHTML = `
