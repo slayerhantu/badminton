@@ -126,14 +126,16 @@
 
     <div class="live-clock" id="malaysia-clock">🇲🇾 MYT: Loading time...</div>
 
-    <div id="schedule-container">Loading schedule...</div>
+    <div id="schedule-container">Loading schedule lineup...</div>
 
     <div class="footer">Tip: Bookmark this page to check weekly slots!</div>
 
     <script>
-        // Utilizing a specialized public database channel explicitly structured to allow static websites to save data seamlessly
-        const API_BASE = "https://api.restfulapi.dev/objects";
-        const STORAGE_PREFIX = "badminton_okr_slot_2026_";
+        // ========================================================
+        // ⚠️ PASTE YOUR GOOGLE DEPLOYMENT WEB APP URL RIGHT HERE:
+        // ========================================================
+        const ENGINE_URL = "https://script.google.com/macros/s/AKfycbyi8RwKj4aM5b1QLAQMZhBQ-5RU6RT891Pxi-2CIQtoTjolPVl0GYiquPFrvz4W19TI/exec";
+
 
         function getMalaysiaNow() {
             return new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kuala_Lumpur"}));
@@ -152,156 +154,4 @@
 
         function parseCalDateString(dateStr) {
             const year = parseInt(dateStr.substring(0, 4));
-            const month = parseInt(dateStr.substring(4, 6)) - 1; 
-            const day = parseInt(dateStr.substring(6, 8));
-            const hour = parseInt(dateStr.substring(9, 11));
-            const min = parseInt(dateStr.substring(11, 13));
-            const sec = parseInt(dateStr.substring(13, 15));
-            return new Date(year, month, day, hour, min, sec);
-        }
-
-        window.claimSlot = async function(sessionKey, slotIndex, defaultPlayersJson) {
-            const name = prompt("Enter your name to join this slot:");
-            if (!name || name.trim() === "") return;
-
-            let currentPlayers = JSON.parse(decodeURIComponent(defaultPlayersJson));
-            const storageId = localStorage.getItem(`id_${sessionKey}`);
-
-            try {
-                let payload = {
-                    name: STORAGE_PREFIX + sessionKey,
-                    data: { players: currentPlayers }
-                };
-
-                let url = API_BASE;
-                let method = "POST";
-
-                // If this locker already exists on the network, update it instead of making a new one
-                if (storageId) {
-                    url = `${API_BASE}/${storageId}`;
-                    method = "PUT";
-                    
-                    const checkRes = await fetch(url);
-                    if (checkRes.ok) {
-                        const existing = await checkRes.ok ? await checkRes.json() : null;
-                        if (existing && existing.data && existing.data.players) {
-                            currentPlayers = existing.data.players;
-                        }
-                    }
-                }
-
-                currentPlayers[slotIndex] = name.trim();
-                payload.data.players = currentPlayers;
-
-                const saveRes = await fetch(url, {
-                    method: method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (saveRes.ok) {
-                    const savedData = await saveRes.json();
-                    if (savedData.id) {
-                        localStorage.setItem(`id_${sessionKey}`, savedData.id);
-                    }
-                    window.location.reload();
-                } else {
-                    alert("Sync failure. Please try again.");
-                }
-            } catch (err) {
-                alert("Connection failed. Your phone network might be blocking background data scripts.");
-                console.error(err);
-            }
-        };
-
-        fetch('schedule.json?t=' + new Date().getTime())
-            .then(response => response.json())
-            .then(async (data) => {
-                const container = document.getElementById('schedule-container');
-                container.innerHTML = ''; 
-
-                const mytNow = getMalaysiaNow();
-                let activeCardsCount = 0;
-
-                for (const session of data) {
-                    const times = session.calDate.split('/');
-                    const sessionEndTime = parseCalDateString(times[1]);
-
-                    if (mytNow > sessionEndTime) continue; 
-
-                    activeCardsCount++;
-                    const isNext = activeCardsCount === 1; 
-                    const badgeText = isNext ? 'Next Up' : session.status;
-                    const badgeColor = isNext ? 'green' : 'blue';
-                    
-                    const sessionKey = session.calDate.replace('/', '_');
-                    const maxPlayers = session.maxPlayers || 8;
-                    const storageId = localStorage.getItem(`id_${sessionKey}`);
-
-                    let livePlayers = [...session.players];
-                    if (storageId) {
-                        try {
-                            const cloudRes = await fetch(`${API_BASE}/${storageId}`);
-                            if (cloudRes.ok) {
-                                const cloudData = await cloudRes.json();
-                                if (cloudData && cloudData.data && cloudData.data.players) {
-                                    livePlayers = cloudData.data.players;
-                                }
-                            }
-                        } catch(e) { console.log("Database read mismatch fallback executed"); }
-                    }
-
-                    let playerHTML = '';
-                    let activeCount = 0;
-                    let baseTemplateArray = [];
-
-                    for (let i = 0; i < maxPlayers; i++) {
-                        const pName = livePlayers[i] || (session.players && session.players[i]) || "";
-                        baseTemplateArray.push(pName);
-
-                        if (pName && !pName.toLowerCase().includes('open') && !pName.toLowerCase().includes('available') && pName !== "") {
-                            playerHTML += `<div class="player-tag">👤 ${pName}</div>`;
-                            activeCount++;
-                        } else {
-                            const stringifiedTemplate = encodeURIComponent(JSON.stringify(baseTemplateArray));
-                            playerHTML += `<div class="player-tag open" onclick="window.claimSlot('${sessionKey}', ${i}, '${stringifiedTemplate}')">➕ Join Slot</div>`;
-                        }
-                    }
-
-                    const cleanTitle = `Badminton (${session.court})`;
-                    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                    const googleBase = isMobile ? 'https://calendar.google.com/calendar/gp#~calendar:view=e&action=TEMPLATE' : 'https://calendar.google.com/calendar/render?action=TEMPLATE';
-                    const googleUrl = `${googleBase}&text=${encodeURIComponent(cleanTitle)}&dates=${session.calDate}&details=${encodeURIComponent('Check page for latest lineup changes.')}&location=${encodeURIComponent(session.location)}&ctz=Asia/Kuala_Lumpur`;
-
-                    const card = document.createElement('div');
-                    card.className = `booking-card ${isNext ? 'next-up' : ''}`;
-                    card.innerHTML = `
-                        <span class="badge ${badgeColor}">${badgeText}</span>
-                        <h2 class="date-title">${session.date}</h2>
-                        <div class="details-grid">
-                            <div class="detail-item"><div class="label">Time</div><div class="val">${session.time}</div></div>
-                            <div class="detail-item"><div class="label">Court(s)</div><div class="val">${session.court}</div></div>
-                            <div class="detail-item" style="grid-column: span 2;"><div class="label">Location</div><div class="val">${session.location}</div></div>
-                        </div>
-                        <div class="players-section">
-                            <div class="players-title">Lineup Board (${activeCount}/${maxPlayers} Players)</div>
-                            <div class="player-tags">${playerHTML}</div>
-                        </div>
-                        <a href="${googleUrl}" target="_blank" class="cal-btn">
-                            📅 Add to Google Calendar
-                        </a>
-                    `;
-                    container.appendChild(card);
-                }
-
-                if (activeCardsCount === 0) {
-                    container.innerHTML = '<div class="no-sessions">🏸 No upcoming sessions listed for this week. Stay tuned!</div>';
-                }
-            })
-            .catch(err => {
-                document.getElementById('schedule-container').innerHTML = 'Error loading schedule data.';
-                console.error(err);
-            });
-    </script>
-</body>
-</html>
+            const month = parseInt
