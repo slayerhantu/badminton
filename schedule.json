@@ -4,7 +4,7 @@
     "date": "Wednesday, July 1",
     "time": "8:00 PM - 10:00 PM",
     "court": "Court 1",
-    "location": "D'ivo OKR",
+    "location": "D'ivo Old Klang Road",
     "players": ["Hazel", "Bob", "Poh Yeng", "Andy", "Azim", "JJ"]
   },
   {
@@ -12,7 +12,7 @@
     "date": "Friday, July 3",
     "time": "6:00 PM - 10:00 PM",
     "court": "Court 2",
-    "location": "D'ivo OKR",
+    "location": "D'ivo Old Klang Road",
     "players": ["Hazel", "Riyren", "Poh Yeng", "Andy", "Azim"]
   }
 ]
