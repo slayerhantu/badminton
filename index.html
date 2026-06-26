@@ -131,14 +131,12 @@
     <div class="footer">Tip: Bookmark this page to check weekly slots!</div>
 
     <script>
-        // =================================================================
-        // ⚠️ PASTE YOUR GOOGLE FORM CONFIGURATION METRICS HERE:
-        // =================================================================
-        const FORM_ID = "YOUR_GOOGLE_FORM_ID_HERE"; // The long string of letters/numbers in your form link
-        const ENTRY_KEY = "entry.11111111";        // Replace with your first entry ID number
-        const ENTRY_PLAYERS = "entry.22222222";    // Replace with your second entry ID number
+        // Integrated your specific Google Form configuration links
+        const FORM_ID = "1FAIpQLScSq-Nl2XRq_AWBuCsiYTWXEpYEjo_tkJIQENwKmU_qNfZAuw"; 
+        const ENTRY_KEY = "entry.1867630328";        
+        const ENTRY_PLAYERS = "entry.1063700401";    
         
-        // Paste the same Web App URL you generated in your last step here to read the results out:
+        // This web app configuration engine handles the data stream translation reads out cleanly
         const READ_ENGINE_URL = "https://script.google.com/macros/s/AKfycbyi8RwKj4aM5b1QLAQMZhBQ-5RU6RT891Pxi-2CIQtoTjolPVl0GYiquPFrvz4W19TI/exec";
 
         function getMalaysiaNow() {
@@ -173,14 +171,14 @@
             var currentPlayers = JSON.parse(decodeURIComponent(defaultPlayersJson));
             currentPlayers[slotIndex] = name.trim();
 
-            // Construct an official Google Form post submission link
+            // Direct Form submission package link generation layout routing
             const submissionUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse?submit=Submit&${ENTRY_KEY}=${encodeURIComponent(sessionKey)}&${ENTRY_PLAYERS}=${encodeURIComponent(JSON.stringify(currentPlayers))}`;
 
-            // Create a hidden image beacon to drop the request directly into Google Forms silently
+            // Image beacon instantly throws data packets directly into Google Forms bypass validation channels
             const beacon = new Image();
             beacon.src = submissionUrl;
 
-            // Save locally immediately so it shows up for the user without waiting for GitHub cache
+            // Cache instantly into user session context browser environment data
             localStorage.setItem(`live_${sessionKey}`, JSON.stringify(currentPlayers));
 
             setTimeout(() => { window.location.reload(); }, 600);
@@ -209,7 +207,6 @@
                     var sessionKey = session.calDate.replace('/', '_');
                     var maxPlayers = session.maxPlayers || 10;
 
-                    // Read local cache layout first, fallback to script tracking database channel
                     var livePlayers = JSON.parse(localStorage.getItem(`live_${sessionKey}`)) || [...session.players];
                     
                     try {
