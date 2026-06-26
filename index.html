@@ -61,11 +61,26 @@
         .detail-item { background: #f8fafc; padding: 10px 12px; border-radius: 8px; font-size: 0.9rem; }
         .label { font-size: 0.75rem; color: var(--text-sub); text-transform: uppercase; margin-bottom: 2px; }
         .val { font-weight: 600; }
-        .players-section { border-top: 1px dashed #e2e8f0; padding-top: 14px; margin-bottom: 16px; }
-        .players-title { font-size: 0.85rem; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
-        .player-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-        .player-tag { background: #f1f5f9; padding: 4px 10px; border-radius: 100px; font-size: 0.85rem; font-weight: 500; }
-        .player-tag.open { background: none; border: 1px dashed #cbd5e1; color: var(--text-sub); }
+        
+        /* Interactive Spreadsheet Container */
+        .sheet-section {
+            border-top: 1px dashed #e2e8f0;
+            padding-top: 14px;
+            margin-bottom: 16px;
+        }
+        .sheet-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+        }
+        .sheet-frame {
+            width: 100%;
+            height: 220px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
         
         .cal-btn {
             display: flex;
@@ -83,10 +98,7 @@
             transition: background 0.2s ease;
             box-sizing: border-box;
         }
-        .cal-btn:hover {
-            background: #059669;
-        }
-
+        .cal-btn:hover { background: #059669; }
         .no-sessions {
             text-align: center;
             padding: 40px 20px;
@@ -96,7 +108,6 @@
             border: 1px dashed #cbd5e1;
             font-weight: 500;
         }
-
         .footer { font-size: 0.8rem; color: var(--text-sub); margin-top: 12px; }
     </style>
 </head>
@@ -161,18 +172,13 @@
                     const badgeText = isNext ? 'Next Up' : session.status;
                     const badgeColor = isNext ? 'green' : 'blue';
                     
-                    let playerHTML = '';
-                    session.players.forEach(player => {
-                        const isOpen = player.toLowerCase().includes('open');
-                        playerHTML += `<div class="player-tag ${isOpen ? 'open' : ''}">${player}</div>`;
-                    });
-
                     const cleanTitle = `Badminton (${session.court})`;
-                    const cleanLineup = session.players.join(', ');
-                    
                     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                     const googleBase = isMobile ? 'https://calendar.google.com/calendar/gp#~calendar:view=e&action=TEMPLATE' : 'https://calendar.google.com/calendar/render?action=TEMPLATE';
-                    const googleUrl = `${googleBase}&text=${encodeURIComponent(cleanTitle)}&dates=${session.calDate}&details=${encodeURIComponent(`Lineup: ${cleanLineup}`)}&location=${encodeURIComponent(session.location)}&ctz=Asia/Kuala_Lumpur`;
+                    const googleUrl = `${googleBase}&text=${encodeURIComponent(cleanTitle)}&dates=${session.calDate}&details=${encodeURIComponent('Check website for live slot lineup.')}&location=${encodeURIComponent(session.location)}&ctz=Asia/Kuala_Lumpur`;
+
+                    // Generate the clean interactive embed frame link using the sheet ID from your json
+                    const sheetEmbedUrl = `https://docs.google.com/spreadsheets/d/${session.sheetId}/edit?rm=minimal`;
 
                     const card = document.createElement('div');
                     card.className = `booking-card ${isNext ? 'next-up' : ''}`;
@@ -184,12 +190,12 @@
                             <div class="detail-item"><div class="label">Court(s)</div><div class="val">${session.court}</div></div>
                             <div class="detail-item" style="grid-column: span 2;"><div class="label">Location</div><div class="val">${session.location}</div></div>
                         </div>
-                        <div class="players-section">
-                            <div class="players-title">Lineup (${session.players.filter(p => !p.toLowerCase().includes('open')).length} Players)</div>
-                            <div class="player-tags">${playerHTML}</div>
+                        <div class="sheet-section">
+                            <div class="sheet-title">📝 Lineup Board (Tap a cell to edit your name)</div>
+                            <iframe class="sheet-frame" src="${sheetEmbedUrl}"></iframe>
                         </div>
                         <a href="${googleUrl}" target="_blank" class="cal-btn">
-                            📅 Add to Google Calendar
+                            📅 Add Session to Calendar
                         </a>
                     `;
                     container.appendChild(card);
