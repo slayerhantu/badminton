@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badminton Session Info</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --primary-color: #10b981; /* Badminton court green */
+            --text-color: #1f2937;
+            --text-light: #6b7280;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin: 0 0 8px 0;
+            color: var(--text-color);
+        }
+
+        .badge {
+            background-color: #e6f4ea;
+            color: var(--primary-color);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .info-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .player-list {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+
+        .player-list h2 {
+            font-size: 1.1rem;
+            margin: 0 0 12px 0;
+        }
+
+        .player-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .player-card {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>🏸 Next Badminton Session</h1>
+            <span class="badge">Status: Booked!</span>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-box">
+                <div class="info-label">Date</div>
+                <div class="info-value">Saturday, July 4</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">Time</div>
+                <div class="info-value">8:00 PM - 10:00 PM</div>
+            </div>
+            <div class="info-box" style="grid-column: span 2;">
+                <div class="info-label">Venue & Court</div>
+                <div class="info-value">Sports Arena (Court 4 & 5)</div>
+            </div>
+        </div>
+
+        <div class="player-list">
+            <h2>Confirmed Players (6/8)</h2>
+            <div class="player-grid">
+                <div class="player-card"><div class="status-dot"></div> Alex</div>
+                <div class="player-card"><div class="status-dot"></div> Ben</div>
+                <div class="player-card"><div class="status-dot"></div> Chloe</div>
+                <div class="player-card"><div class="status-dot"></div> Dave</div>
+                <div class="player-card"><div class="status-dot"></div> Emma</div>
+                <div class="player-card"><div class="status-dot"></div> Sam</div>
+                <div class="player-card" style="opacity: 0.5; border: 1px dashed #cbd5e1; background: none;"> Waiting...</div>
+                <div class="player-card" style="opacity: 0.5; border: 1px dashed #cbd5e1; background: none;"> Waiting...</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Last updated: Just now
+        </div>
+    </div>
+
+</body>
+</html>
