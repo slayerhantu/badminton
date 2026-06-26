@@ -134,15 +134,15 @@
         updateMalaysiaClock();
         setInterval(updateMalaysiaClock, 1000);
 
-        function downloadICS(title, location, calDate, lineup) {
+        // Helper to cleanly convert data into a direct link format the phone OS can read instantly
+        function generateNativeCalUrl(title, location, calDate, lineup) {
             const times = calDate.split('/');
             const startTime = times[0];
             const endTime = times[1];
 
-            const icsContent = [
+            const icsLines = [
                 'BEGIN:VCALENDAR',
                 'VERSION:2.0',
-                'PRODID:-//Badminton Schedule//EN',
                 'BEGIN:VEVENT',
                 `SUMMARY:${title}`,
                 `LOCATION:${location}`,
@@ -151,15 +151,9 @@
                 `DTEND;TZID=Asia/Kuala_Lumpur:${endTime}`,
                 'END:VEVENT',
                 'END:VCALENDAR'
-            ].join('\r\n');
+            ].join('\n');
 
-            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute('download', 'badminton-session.ics');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            return 'data:text/calendar;charset=utf8,' + encodeURIComponent(icsLines);
         }
 
         fetch('schedule.json?t=' + new Date().getTime())
@@ -184,10 +178,12 @@
                     const calDetails = encodeURIComponent(`Lineup: ${cleanLineup}`);
                     const calLoc = encodeURIComponent(session.location);
                     
-                    // Smart detection link: forces mobile calendar app render layout smoothly on phones
                     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                     const googleBase = isMobile ? 'https://calendar.google.com/calendar/gp#~calendar:view=e&action=TEMPLATE' : 'https://calendar.google.com/calendar/render?action=TEMPLATE';
                     const googleUrl = `${googleBase}&text=${calTitle}&dates=${session.calDate}&details=${calDetails}&location=${calLoc}&ctz=Asia/Kuala_Lumpur`;
+
+                    // Generate the clean data stream link
+                    const nativeCalUrl = generateNativeCalUrl(cleanTitle, session.location, session.calDate, cleanLineup);
 
                     const card = document.createElement('div');
                     card.className = `booking-card ${isNext ? 'next-up' : ''}`;
@@ -207,16 +203,12 @@
                             <a href="${googleUrl}" target="_blank" class="cal-btn">
                                 🤖 Add to Google Calendar
                             </a>
-                            <button id="ics-btn-${index}" class="cal-btn apple-android">
-                                🍏 Add to iPhone / System Calendar
-                            </button>
+                            <a href="${nativeCalUrl}" class="cal-btn apple-android">
+                                🍏 Add to iPhone / Phone Calendar
+                            </a>
                         </div>
                     `;
                     container.appendChild(card);
-
-                    document.getElementById(`ics-btn-${index}`).addEventListener('click', () => {
-                        downloadICS(cleanTitle, session.location, session.calDate, cleanLineup);
-                    });
                 });
             })
             .catch(err => {
