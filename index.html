@@ -131,12 +131,11 @@
     <div class="footer">Tip: Bookmark this page to check weekly slots!</div>
 
     <script>
-        // Integrated your specific Google Form configuration links
         const FORM_ID = "1FAIpQLScSq-Nl2XRq_AWBuCsiYTWXEpYEjo_tkJIQENwKmU_qNfZAuw"; 
         const ENTRY_KEY = "entry.1867630328";        
         const ENTRY_PLAYERS = "entry.1063700401";    
         
-        // This web app configuration engine handles the data stream translation reads out cleanly
+        // This web app configuration engine handles reading live from the sheet
         const READ_ENGINE_URL = "https://script.google.com/macros/s/AKfycbyi8RwKj4aM5b1QLAQMZhBQ-5RU6RT891Pxi-2CIQtoTjolPVl0GYiquPFrvz4W19TI/exec";
 
         function getMalaysiaNow() {
@@ -171,17 +170,14 @@
             var currentPlayers = JSON.parse(decodeURIComponent(defaultPlayersJson));
             currentPlayers[slotIndex] = name.trim();
 
-            // Direct Form submission package link generation layout routing
             const submissionUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse?submit=Submit&${ENTRY_KEY}=${encodeURIComponent(sessionKey)}&${ENTRY_PLAYERS}=${encodeURIComponent(JSON.stringify(currentPlayers))}`;
 
-            // Image beacon instantly throws data packets directly into Google Forms bypass validation channels
             const beacon = new Image();
             beacon.src = submissionUrl;
 
-            // Cache instantly into user session context browser environment data
-            localStorage.setItem(`live_${sessionKey}`, JSON.stringify(currentPlayers));
-
-            setTimeout(() => { window.location.reload(); }, 600);
+            // Notice: Local storage caching removed so it relies strictly on your cloud database row!
+            // Give it 1.5 seconds to hit the Google Sheet before reloading the screen layout cleanly
+            setTimeout(() => { window.location.reload(); }, 1500);
         };
 
         fetch('schedule.json?t=' + new Date().getTime())
@@ -207,8 +203,10 @@
                     var sessionKey = session.calDate.replace('/', '_');
                     var maxPlayers = session.maxPlayers || 10;
 
-                    var livePlayers = JSON.parse(localStorage.getItem(`live_${sessionKey}`)) || [...session.players];
+                    // Fallback baseline array tracking
+                    var livePlayers = [...session.players];
                     
+                    // Fetch directly from your live Google Sheet using your Apps Script
                     try {
                         const cloudRes = await fetch(`${READ_ENGINE_URL}?key=${sessionKey}`);
                         if (cloudRes.ok) {
