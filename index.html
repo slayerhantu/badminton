@@ -165,12 +165,9 @@
             var currentPlayers = JSON.parse(decodeURIComponent(defaultPlayersJson));
             currentPlayers[slotIndex] = name.trim();
 
-            // "Fire and Forget" strategy: Send the payload using the safe beacon image method
-            // This transmits the data instantly over any mobile network and guarantees zero timeouts
             const submissionPayload = JSON.stringify({ sessionKey: sessionKey, players: currentPlayers });
             
             try {
-                // Instantly execute payload handover 
                 fetch(ENGINE_URL, {
                     method: "POST",
                     mode: "no-cors", 
@@ -179,8 +176,8 @@
                 });
             } catch(e) {}
 
-            // Force immediate UI display update right away
-            setTimeout(() => { window.location.reload(); }, 400);
+            // Calibrated delay (1.5 seconds) giving Google time to process the save request
+            setTimeout(() => { window.location.reload(); }, 1500);
         };
 
         fetch('schedule.json?t=' + new Date().getTime())
