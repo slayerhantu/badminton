@@ -162,23 +162,21 @@
             return new Date(year, month, day, hour, min, sec);
         }
 
-        window.claimSlot = function(sessionKey, slotIndex, defaultPlayersJson) {
+        window.claimSlot = function(sessionKey, slotIndex, currentLineupJson) {
             var name = prompt("Enter your name to claim this slot:");
             if (!name || name.trim() === "") return;
 
-            var currentPlayers = JSON.parse(decodeURIComponent(defaultPlayersJson));
-            currentPlayers[slotIndex] = name.trim();
+            var fullLineup = JSON.parse(decodeURIComponent(currentLineupJson));
+            fullLineup[slotIndex] = name.trim();
 
-            const submissionUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse?submit=Submit&${ENTRY_KEY}=${encodeURIComponent(sessionKey)}&${ENTRY_PLAYERS}=${encodeURIComponent(JSON.stringify(currentPlayers))}`;
+            const submissionUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse?submit=Submit&${ENTRY_KEY}=${encodeURIComponent(sessionKey)}&${ENTRY_PLAYERS}=${encodeURIComponent(JSON.stringify(fullLineup))}`;
 
             const beacon = new Image();
             beacon.src = submissionUrl;
 
-            // Short pause to let Google accept the request payload completely
             setTimeout(() => { window.location.reload(); }, 1500);
         };
 
-        // Cache-busting parameter attached to schedule logic data
         fetch('schedule.json?t=' + new Date().getTime())
             .then(response => response.json())
             .then(async (data) => {
@@ -200,33 +198,43 @@
                     var badgeColor = isNext ? 'green' : 'blue';
                     
                     var sessionKey = session.calDate.replace('/', '_');
-                    var maxPlayers = session.maxPlayers || 10;
+                    var maxPlayers = session.maxPlayers || 8;
 
-                    var livePlayers = [...session.players];
+                    // Standardize full length baseline array immediately
+                    var livePlayers = Array(maxPlayers).fill("");
+                    if (session.players && session.players.length > 0) {
+                        for(let k=0; k<maxPlayers; k++) {
+                            if(session.players[k]) livePlayers[k] = session.players[k];
+                        }
+                    }
                     
-                    // Connected directly to read script endpoint with mandatory cloud refresh tags
                     try {
                         const cloudRes = await fetch(`${READ_ENGINE_URL}?key=${sessionKey}&nocache=${new Date().getTime()}`);
                         if (cloudRes.ok) {
                             const cloudData = await cloudRes.json();
-                            if (cloudData && cloudData.length > 0) livePlayers = cloudData;
+                            if (cloudData && cloudData.length > 0) {
+                                // Keep array length exact structure matching maxPlayers constraint
+                                for(let k=0; k<maxPlayers; k++) {
+                                    if(cloudData[k] !== undefined) livePlayers[k] = cloudData[k];
+                                }
+                            }
                         }
                     } catch(e) {}
 
                     var playerHTML = '';
                     var activeCount = 0;
-                    var baseTemplateArray = [];
+
+                    // Stringify the exact full length live configuration state for safe replacement mapping
+                    var stringifiedLineup = encodeURIComponent(JSON.stringify(livePlayers));
 
                     for (let i = 0; i < maxPlayers; i++) {
-                        var pName = livePlayers[i] || (session.players && session.players[i]) || "";
-                        baseTemplateArray.push(pName);
+                        var pName = livePlayers[i] || "";
 
-                        if (pName && !pName.toLowerCase().includes('open') && !pName.toLowerCase().includes('available') && pName !== "") {
+                        if (pName && !pName.toLowerCase().includes('open') && !pName.toLowerCase().includes('available') && pName.trim() !== "") {
                             playerHTML += `<div class="player-tag">👤 ${pName}</div>`;
                             activeCount++;
                         } else {
-                            var stringifiedTemplate = encodeURIComponent(JSON.stringify(baseTemplateArray));
-                            playerHTML += `<div class="player-tag open" onclick="window.claimSlot('${sessionKey}', ${i}, '${stringifiedTemplate}')">➕ Join Slot</div>`;
+                            playerHTML += `<div class="player-tag open" onclick="window.claimSlot('${sessionKey}', ${i}, '${stringifiedLineup}')">➕ Join Slot</div>`;
                         }
                     }
 
