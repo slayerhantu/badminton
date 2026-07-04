@@ -7,6 +7,6 @@
     "court": "Court 2",
     "location": "D'ivo Old Klang Road",
     "maxPlayers": 8,
-    "players": ["", "", "", "", "", "", "", "", "", ""]
+    "players": ["", "", "", "", "", "", "", ""]
   }
 ]
