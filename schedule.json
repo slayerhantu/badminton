@@ -1,22 +1,12 @@
 [
   {
-    "status": "Next Up",
-    "date": "Wednesday, 1 July 2026",
-    "time": "8:00 PM - 10:00 PM",
-    "calDate": "20260701T200000/20260701T220000",
-    "court": "Court 1",
-    "location": "D'ivo Old Klang Road",
-    "maxPlayers": 10,
-    "players": []
-  },
-  {
-    "status": "Later Slot",
-    "date": "Friday, 3 July 2026",
+    "status": "Booking Confirmed",
+    "date": "Saturday, 11 July 2026",
     "time": "6:00 PM - 10:00 PM",
-    "calDate": "20260703T180000/20260703T220000",
+    "calDate": "20260711T180000/20260711T220000",
     "court": "Court 2",
     "location": "D'ivo Old Klang Road",
-    "maxPlayers": 10,
-    "players": []
+    "maxPlayers": 8,
+    "players": ["", "", "", "", "", "", "", "", "", ""]
   }
 ]
