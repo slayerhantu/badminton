@@ -1,9 +1,29 @@
 [
   {
-    "status": "Booking Confirmed",
+    "status": "Next Up",
     "date": "Wednesday, 29 July 2026",
     "time": "7:00 PM - 8:00 PM (8-10PM Continue / Basketball)",
     "calDate": "20260729T190000/20260729T200000",
+    "court": "Court 2",
+    "location": "Old Klang Road",
+    "maxPlayers": 8,
+    "players": ["", "", "", "", "", "", "", ""]
+  },
+  {
+    "status": "Later Slot",
+    "date": "Friday, 14 August 2026",
+    "time": "8:00 PM - 10:00 PM",
+    "calDate": "20260814T200000/20260814T220000",
+    "court": "Court 2",
+    "location": "Old Klang Road",
+    "maxPlayers": 8,
+    "players": ["", "", "", "", "", "", "", ""]
+  },
+  {
+    "status": "Later Slot",
+    "date": "Friday, 21 August 2026",
+    "time": "8:00 PM - 10:00 PM",
+    "calDate": "20260821T200000/20260821T220000",
     "court": "Court 2",
     "location": "Old Klang Road",
     "maxPlayers": 8,
