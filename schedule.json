@@ -1,12 +1,12 @@
 [
   {
     "status": "Next Up",
-    "date": "Friday, 25 September 2026",
-    "time": "6:00 PM - 10:00 PM",
-    "calDate": "20260925T180000/20260925T220000",
-    "court": "Court 1 & 2 (6pm-8pm), Court 2 (8pm-10pm)",
+    "date": "Wednesday, 7 October 2026",
+    "time": "8:00 PM - 10:00 PM",
+    "calDate": "20261007T200000/20261007T220000",
+    "court": "Court 1 & 2",
     "location": "Old Klang Road",
-    "maxPlayers": 8,
-    "players": ["", "", "", "", "", "", "", ""]
+    "maxPlayers": 12,
+    "players": ["", "", "", "", "", "", "", "", "", "", "", ""]
   }
 ]
