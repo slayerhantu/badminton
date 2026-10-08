@@ -1,12 +1,12 @@
 [
   {
     "status": "Next Up",
-    "date": "Wednesday, 7 October 2026",
+    "date": "Wednesday, 14 October 2026",
     "time": "8:00 PM - 10:00 PM",
-    "calDate": "20261007T200000/20261007T220000",
-    "court": "Court 1 & 2",
+    "calDate": "20261014T200000/20261014T220000",
+    "court": "Court 1",
     "location": "Old Klang Road",
-    "maxPlayers": 12,
-    "players": ["", "", "", "", "", "", "", "", "", "", "", ""]
+    "maxPlayers": 6,
+    "players": ["", "", "", "", "", ""]
   }
 ]
