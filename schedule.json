@@ -1,12 +1,42 @@
 [
   {
     "status": "Next Up",
-    "date": "Wednesday, 14 October 2026",
+    "date": "Friday, 23 October 2026",
     "time": "8:00 PM - 10:00 PM",
-    "calDate": "20261014T200000/20261014T220000",
-    "court": "Court 1",
+    "calDate": "20261023T200000/20261023T220000",
+    "court": "Court 2",
     "location": "Old Klang Road",
-    "maxPlayers": 6,
-    "players": ["", "", "", "", "", ""]
+    "maxPlayers": 8,
+    "players": ["", "", "", "", "", "", "", ""]
+  },
+  {
+    "status": "Later Slot",
+    "date": "Wednesday, 28 October 2026",
+    "time": "8:00 PM - 10:00 PM",
+    "calDate": "20261028T200000/20261028T220000",
+    "court": "Court 2",
+    "location": "Old Klang Road",
+    "maxPlayers": 8,
+    "players": ["", "", "", "", "", "", "", ""]
+  },
+  {
+    "status": "Later Slot",
+    "date": "Wednesday, 4 November 2026",
+    "time": "8:00 PM - 10:00 PM",
+    "calDate": "20261104T200000/20261104T220000",
+    "court": "Court 2",
+    "location": "Old Klang Road",
+    "maxPlayers": 8,
+    "players": ["", "", "", "", "", "", "", ""]
+  },
+  {
+    "status": "Later Slot",
+    "date": "Wednesday, 11 November 2026",
+    "time": "8:00 PM - 10:00 PM",
+    "calDate": "20261111T200000/20261111T220000",
+    "court": "Court 2",
+    "location": "Old Klang Road",
+    "maxPlayers": 8,
+    "players": ["", "", "", "", "", "", "", ""]
   }
 ]
